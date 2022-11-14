@@ -1,89 +1,496 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <script type="text/javascript">
+            // <![CDATA[
+            var colours=new Array('#red', '#f06', '#f0f', '#f6f', '#f39', '#f9c'); // colours of the hearts
+            var minisize=16; // smallest size of hearts in pixels
+            var maxisize=28; // biggest size of hearts in pixels
+            var hearts=66; // maximum number of hearts on screen
+            var over_or_under="over"; // set to "over" for hearts to always be on top, or "under" to allow them to float behind other objects
+            
+            /*****************************
+            *JavaScript Love Heart Cursor*
+            *  (c)2013+ mf2fm web-design *
+            *   http://www.mf2fm.com/rv  *
+            *  DON'T EDIT BELOW THIS BOX *
+            *****************************/
+            var x=ox=400;
+            var y=oy=300;
+            var swide=800;
+            var shigh=600;
+            var sleft=sdown=0;
+            var herz=new Array();
+            var herzx=new Array();
+            var herzy=new Array();
+            var herzs=new Array();
+            var kiss=false;
+            
+            if (typeof('addRVLoadEvent')!='function') function addRVLoadEvent(funky) {
+              var oldonload=window.onload;
+              if (typeof(oldonload)!='function') window.onload=funky;
+              else window.onload=function() {
+                if (oldonload) oldonload();
+                funky();
+              }
+            }
+            
+            addRVLoadEvent(mwah);
+            
+            function mwah() { if (document.getElementById) {
+              var i, heart;
+              for (i=0; i<hearts; i++) {
+                heart=createDiv("auto", "auto");
+                heart.style.visibility="hidden";
+                heart.style.zIndex=(over_or_under=="over")?"1001":"0";
+                heart.style.color=colours[i%colours.length];
+                heart.style.pointerEvents="none";
+                if (navigator.appName=="Microsoft Internet Explorer") heart.style.filter="alpha(opacity=75)";
+                else heart.style.opacity=0.75;
+                heart.appendChild(document.createTextNode(String.fromCharCode(9829)));
+                document.body.appendChild(heart);
+                herz[i]=heart;
+                herzy[i]=false;
+              }
+              set_scroll();
+              set_width();
+              herzle();
+            }}
+            
+            function herzle() {
+              var c;
+              if (Math.abs(x-ox)>1 || Math.abs(y-oy)>1) {
+                ox=x;
+                oy=y;
+                for (c=0; c<hearts; c++) if (herzy[c]===false) {
+                  herz[c].firstChild.nodeValue=String.fromCharCode(9829);
+                  herz[c].style.left=(herzx[c]=x-minisize/2)+"px";
+                  herz[c].style.top=(herzy[c]=y-minisize)+"px";
+                  herz[c].style.fontSize=minisize+"px";
+                  herz[c].style.fontWeight='normal';
+                  herz[c].style.visibility='visible';
+                  herzs[c]=minisize;
+                  break;
+                }
+              }
+              for (c=0; c<hearts; c++) if (herzy[c]!==false) blow_me_a_kiss(c);
+              setTimeout("herzle()", 40);
+            }
+            
+            document.onmousedown=pucker;
+            document.onmouseup=function(){clearTimeout(kiss);};
+            
+            function pucker() {
+              ox=-1;
+              oy=-1;
+              kiss=setTimeout('pucker()', 100);
+            }
+            
+            function blow_me_a_kiss(i) {
+              herzy[i]-=herzs[i]/minisize+i%2;
+              herzx[i]+=(i%5-2)/5;
+              if (herzy[i]<sdown-herzs[i] || herzx[i]<sleft-herzs[i] || herzx[i]>sleft+swide-herzs[i]) {
+                herz[i].style.visibility="hidden";
+                herzy[i]=false;
+              }
+              else if (herzs[i]>minisize+2 && Math.random()<.5/hearts) break_my_heart(i);
+              else {
+                if (Math.random()<maxisize/herzy[i] && herzs[i]<maxisize) herz[i].style.fontSize=(++herzs[i])+"px";
+                herz[i].style.top=herzy[i]+"px";
+                herz[i].style.left=herzx[i]+"px";
+              }
+            }
+            
+            function break_my_heart(i) {
+              var t;
+              herz[i].firstChild.nodeValue=String.fromCharCode(9676);
+              herz[i].style.fontWeight='bold';
+              herzy[i]=false;
+              for (t=herzs[i]; t<=maxisize; t++) setTimeout('herz['+i+'].style.fontSize="'+t+'px"', 60*(t-herzs[i]));
+              setTimeout('herz['+i+'].style.visibility="hidden";', 60*(t-herzs[i]));
+            }
+            
+            document.onmousemove=mouse;
+            function mouse(e) {
+              if (e) {
+                y=e.pageY;
+                x=e.pageX;
+              }
+              else {
+                set_scroll();
+                y=event.y+sdown;
+                x=event.x+sleft;
+              }
+            }
+            
+            window.onresize=set_width;
+            function set_width() {
+              var sw_min=999999;
+              var sh_min=999999;
+              if (document.documentElement && document.documentElement.clientWidth) {
+                if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
+                if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
+              }
+              if (typeof(self.innerWidth)=='number' && self.innerWidth) {
+                if (self.innerWidth>0 && self.innerWidth<sw_min) sw_min=self.innerWidth;
+                if (self.innerHeight>0 && self.innerHeight<sh_min) sh_min=self.innerHeight;
+              }
+              if (document.body.clientWidth) {
+                if (document.body.clientWidth>0 && document.body.clientWidth<sw_min) sw_min=document.body.clientWidth;
+                if (document.body.clientHeight>0 && document.body.clientHeight<sh_min) sh_min=document.body.clientHeight;
+              }
+              if (sw_min==999999 || sh_min==999999) {
+                sw_min=800;
+                sh_min=600;
+              }
+              swide=sw_min;
+              shigh=sh_min;
+            }
+            
+            window.onscroll=set_scroll;
+            function set_scroll() {
+              if (typeof(self.pageYOffset)=='number') {
+                sdown=self.pageYOffset;
+                sleft=self.pageXOffset;
+              }
+              else if (document.body && (document.body.scrollTop || document.body.scrollLeft)) {
+                sdown=document.body.scrollTop;
+                sleft=document.body.scrollLeft;
+              }
+              else if (document.documentElement && (document.documentElement.scrollTop || document.documentElement.scrollLeft)) {
+                sleft=document.documentElement.scrollLeft;
+                sdown=document.documentElement.scrollTop;
+              }
+              else {
+                sdown=0;
+                sleft=0;
+              }
+            }
+            
+            function createDiv(height, width) {
+              var div=document.createElement("div");
+              div.style.position="absolute";
+              div.style.height=height;
+              div.style.width=width;
+              div.style.overflow="hidden";
+              div.style.backgroundColor="transparent";
+              return (div);
+            }
+            // ]]>
+            </script>
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta property="og:title" content="야야베이에게로 어서와요" />
-        <meta property="og:description" content="어서와 코딩은 처음이지?" />
-        <meta property="og:image" content="공유할 이미지" />
-        <title>르탄이 - 프로필 링크</title>
+        <meta property="og:title" content="야야베이로 들어가 보자" />
+        <meta property="og:description" content="솔직히 들어와서 하나씩 다 클릭해 보셨으면 좋겠습니다. 재밌거든요." />
+        <meta property="og:image" content="Yaayaa Bey Logo Video.png" />
+        <title>야야베이에 어서 와요</title>
         <style>
             @import  url('https://cdn.jsdelivr.net/gh/quiple/hbios-sys@latest/hbios-sys.css');
                 * {
                     font-family: "HBIOS-SYS";
                 }
             body {
-                background-color: #E1D6EC;
-                background-image: url('20211024_095742-removebg.png');
+              background-color: #E1D6EC;
+              background-image: url('20211024_095742-removebg.png');
+              background-size: cover;
+              background-repeat: no-repeat;
+            }
+            .Pwrap {
+              width: 300px;
+              margin: 30px auto 0px;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
             }
             .profile {
-                width: 100px;
-                height: 100px;
-
-                background-image: url('Yaayaa Bey Logo(Square)_210808.png');
-                background-position: center;
-                background-size: cover;
-                border-radius: 100%;
+              width: 100px;
+              height: 100px;
+              background-image: url('Yaayaa Bey Logo(Square)_210808.png');
+              background-position: center;
+              background-size: cover;
+              background-color: #ffffff;
+              border-radius: 100%;
             }
             .main {
-                color: white;
-                font-size: 20px;
-
-                margin-top: 30px;
-                margin-bottom: 10px;
+              color: white;
+              font-size: 20px;
+              margin-top: 30px;
+              margin-bottom: 10px;
+              text-shadow: 2px 2px 0px black;
             }
             .sub {
-                color: white;
-                font-size: 14px;
-
-                margin-bottom: 30px;
+              color: white;
+              font-size: 14px;
+              margin-bottom: 10px;
+              text-shadow: 1px 1px 0px black;
             }
+
+            .music {
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              margin-bottom: -40px;
+            }
+            .cc {
+              color: rgb(56, 56, 56);
+              font-size: 12px;
+              margin-bottom: 5px;
+              line-height: 16px;
+            }
+
             .wrap {
-                width: 300px;
-                margin: 30px auto 0px;
-
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
+              width: 300px;
+              margin: 10px auto 0px auto;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              border: 1px solid white;
+              padding: 10px 10px 10px 10px;
             }
-            .wrap > a {
-                width: 300px;
-                height: 50px;
-                
-                background-color: #BEE9AE;
-                border-radius: 8px;
-                margin-bottom: 10px;
-                
-                font-size: 14px;
-                font-weight: bold;
-                color: #4f3e5f;
-             
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-
-                text-decoration: none;
-
-                box-shadow: 3px 3px 5px 0px rgb(0, 0, 0);
+            .category {
+              color: rgb(255, 255, 255);
+              font-size: 20px;
+              margin-bottom: 20px;
+              text-shadow: 2px 2px 0px black;
+              align-items: center;
+              justify-content: center;
+              flex-direction: column;
+              display: flex;
             }
-            .wrap > a:hover {
-                font-color: black;
-                font-size: 20px;
+            .big-btn {
+              width: 300px;
+              height: 50px;
+              border-radius: 8px;
+              margin-bottom: 15px;
+              font-size: 14px;
+              font-weight: bold;
+              color: #4f3e5f;           
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              text-decoration: none;
+              box-shadow: 3px 3px 5px rgb(0, 0, 0);
             }
+            .big-btn:hover {
+              font-size: 20px;
+              color: chocolate;
+            }
+            .buttons {
+              display: flex;
+            }
+            .small-btn {
+              width: 144px;
+              height: 50px;
+              border-radius: 8px;
+              margin-right: 5px;
+              margin-left: 5px;
+              margin-bottom: 10px;
+              font-size: 14px;
+              font-weight: bold;
+              color: #4f3e5f;
+              display: flex;
+              flex-direction: row;
+              justify-content: center;
+              align-items: center;
+              text-decoration: none;
+              box-shadow: 3px 3px 5px rgb(0, 0, 0);
+            }
+            .small-btn:hover {
+              font-size: 14px;
+              color: chocolate;
+            }
+
+            .divider {
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              color: rgb(255, 255, 255);
+              font-size: 15px;
+              margin-bottom: 20px;
+              text-shadow: 2px 1px 1px black;
+            }
+
+            .squre-btn {
+              width: 144px;
+              height: 90px;
+              border-radius: 8px;
+              margin-right: 5px;
+              margin-left: 5px;
+              margin-bottom: 15px;
+              font-size: 14px;
+              font-weight: bold;
+              color: #4f3e5f;
+              display: flex;
+              flex-direction: row;
+              justify-content: center;
+              align-items: center;
+              text-decoration: none;
+              text-align: center;
+              box-shadow: 3px 3px 5px rgb(0, 0, 0);
+            }
+            .squre-btn:hover {
+              font-size: 20px;
+              color: chocolate;
+            }
+            
+            .td {
+              transition: top .01s linear;
+              position: relative;
+            }
+            .td:active {top: 9px;}
+            .td.purple:hover {background-color: #dcb4d7;}
+            .td.green:hover {background-color: #88cfa7;}
+            .td.yellow:hover {background-color: #f0d470;}
+            .td.purple {
+              background-color: #d5afd0;
+              box-shadow: 0 0 0 1px #d5afd0 inset,
+              0 0 0 2px rgba(255,255,255,0.15) inset,
+              0 8px 0 0 rgba(189, 142, 183, .7),
+              0 8px 0 1px rgba(0,0,0,.4),
+              0 8px 8px 1px rgba(0,0,0,0.5);
+            }
+            .td.purple:active {
+              box-shadow: 0 0 0 1px #d5afd0 inset,
+              0 0 0 2px rgba(255,255,255,0.15) inset,
+              0 0 0 1px rgba(0,0,0,0.4);
+            }
+            .td.green {
+              background-color: hsl(146, 39%, 65%);
+              box-shadow: 0 0 0 1px #82c8a0 inset,
+               0 0 0 2px rgba(255,255,255,0.15) inset,
+              0 8px 0 0 rgba(126, 194, 155, .7),
+              0 8px 0 1px rgba(0,0,0,.4),
+              0 8px 8px 1px rgba(0,0,0,0.5);
+            }
+            .td.green:active {
+              box-shadow: 0 0 0 1px #82c8a0 inset,
+              0 0 0 2px rgba(255,255,255,0.15) inset,
+              0 0 0 1px rgba(0,0,0,0.4);
+            }
+            .td.yellow {
+              background-color: #F0D264;
+              box-shadow: 0 0 0 1px #F0D264 inset,
+              0 0 0 2px rgba(255,255,255,0.15) inset,
+              0 8px 0 0 rgba(196, 172, 83, .7),
+              0 8px 0 1px rgba(0,0,0,.4),
+              0 8px 8px 1px rgba(0,0,0,0.5);
+            }
+            .td.yellow:active {
+              box-shadow: 0 0 0 1px #F0D264 inset,
+              0 0 0 2px rgba(255,255,255,0.15) inset,
+              0 0 0 1px rgba(0,0,0,0.4);
+            }
+
+            .contact {
+              width: 320px;
+              margin: -10px auto 0px auto;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              background-color: white;
+              border-radius: 30px;
+              padding: 10px 10px 10px 10px;
+            }
+            #contact-area {
+	            width: 300px;
+	            margin-top: 25px;
+            }
+            .text {
+	            padding: 5px;
+	            width: 280px;
+	            font-size: 14px;
+            	margin: 2px 0px 10px 0px;
+            	border: 1px solid #ccc;
+              color: rgb(103, 103, 103);
+            }
+            #contact-area textarea {
+              height: 90px;
+            }
+            label {
+              float: left;
+              text-align: left;
+              margin-right: 5px;
+              margin-top: 5px;
+              width: 100px;
+              font-size: 14px;
+            }
+            .submit-btn {
+              width: 80px;
+              height: 40px;
+              border-radius: 8px;
+              margin: 5px 105px 15px 0px;
+              font-size: 14px;
+              font-weight: bold;
+              color: #4f3e5f;
+              float: right;
+              border: 0;
+              outline: 0;
+            }
+           .submit-btn:hover {
+              font-size: 16px;
+              color: chocolate;
+            }
+
         </style>
     </head>
     <body>
-        <div class="wrap">
+        <div class="Pwrap">
             <div class="profile"></div>
             <h1 class="main">야야베이</h1>
-            <p class="sub">베이의 세계에 어서와</p>    
-            <a target="_blank" href="https://instagram.com/yaayaabey">아직 낯가리는 중인 인스타그램</a>
-            <a target="_blank" href="https://https://twitter.com/yb6ringbinder">뜨개 육공바인더로 쓰고 있는 트위터</a>
-            <a target="_blank" href="https://blog.naver.com/baekeun0">엄선된 일기들이 모여사는 블로그</a>
-            <a target="_blank" href="https://brunch.co.kr/@bey">말 많은 사람이 깎고 깎아서 쓰는 브런치</a>
+            <p class="sub">베이의 세계에 어서와</p>
+        </div>
+        <div class="music">
+          <h3 class="cc"><span style="background-color:rgb(149, 149, 149)">ᖰ₍ᐢ•ﻌ•ᐢ₎ᖳ～♪♫ "Mormor - Outside"</span></h3>
+          <div style="height:95px; width:270px; overflow: hidden;">
+            <iframe width="400px"    src="https://www.youtube.com/embed/8KrS3pcX69M?theme=dark&autoplay=1&autohide=0&cc_load_policy=1&modestbranding=1&fs=0&showinfo=0&rel=0&iv_load_policy=3&mute=1&loop=1&playlist=8KrS3pcX69M"   style="height:95px;  background:#000000; bottom: 60px; position: relative;"  
+            sandbox="allow-forms allow-scripts allow-pointer-lock allow-same-origin allow-top-navigation">
+            </iframe>
+          </div>
+        </div>
+        <div class="wrap">
+            <h2 class="category">소셜 미디어</h2>
+            <a class="big-btn td purple" target="_blank" href="https://www.instagram.com/letsdosomethingbey/" onmouseover="this.innerHTML='@letsdosomethingbey'" onmouseout="this.innerHTML='뭐라고 쓸까 아직 못 정함'" >뭐라고 쓸까 아직 못 정함</a>
+            <a class="big-btn td purple" target="_blank" href="https://instagram.com/yaayaabey" onmouseover="this.innerHTML='@yaayaabey'" onmouseout="this.innerHTML='아직 낯가리는 중인 인스타그램'" >아직 낯가리는 중인 인스타그램</a>
+            <a class="big-btn td purple" target="_blank" href="https://twitter.com/yb6ringbinder" onmouseover="this.innerHTML='@yb6ringbinder'" onmouseout="this.innerHTML='뜨개 육공바인더로 쓰고 있는 트위터'">뜨개 육공바인더로 쓰고 있는 트위터</a>
+            <a class="big-btn td purple" target="_blank" href="https://blog.naver.com/baekeun0" onmouseover="this.innerHTML='Sulpaiki Pachamama'" onmouseout="this.innerHTML='엄선된 일기들이 모여사는 블로그'">엄선된 일기들이 모여사는 블로그</a>
+            <div class="buttons">
+              <a class="small-btn td purple" target="_blank" href="https://brunch.co.kr/@bey" onmouseover="this.innerHTML='베이가 일하는 이야기'" onmouseout="this.innerHTML='브런치도 해요'">브런치도 해요</a>
+              <a class="small-btn td purple" target="_blank" href="https://www.youtube.com/channel/UCLDZYJqweOIJ7ciVapWYiEQ" onmouseover="this.innerHTML='42번째 베이'" onmouseout="this.innerHTML='유튜브도 할 거고요'" >유튜브도 할 거고요</a>
+            </div>
+        </div>
+        <h2 class="divider">✄­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--✄</h2>
+        <div class="wrap">
+          <h2 class="category">숍</h2>
+          <div class="buttons">
+            <a class="squre-btn td green" target="_blank" href="https://smartstore.naver.com/yaayaabey">야야베이<br>스마트스토어</a>
+            <a class="squre-btn td green" target="_blank" href="https://101creator.page.link/MmUe" onmouseover="this.innerHTML='@yb6ringbinder'" onmouseout="this.innerHTML='뜨개 육공바인더로 쓰고 있는 트위터'">뜨개 육공바인더로 쓰고 있는 트위터</a>
+          </div>
+          <div class="buttons">
+            <a class="squre-btn td green" target="_blank" href="https://blog.naver.com/baekeun0" onmouseover="this.innerHTML='Sulpaiki Pachamama'" onmouseout="this.innerHTML='엄선된 일기들이 모여사는 블로그'">엄선된 일기들이 모여사는 블로그</a>
+          </div>
+        </div>
+        <h2 class="divider">✄­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--­­--✄</h2>
+        <h2 class="category">연락하기</h2>
+        <div class="contact">
+          <h3 class="cc">아래 내용을 채워 보내면<br>bey@yaayaabey.com의 메일함에<br>당신의 메시지가 도착합니다.<br>답변을 받을 메일 주소를 정확하게 써주세요.</h3>
+          <div id="contact-area">
+            <form method="post" action="contactengine.php">
+              <label for="Name">보내는 분:</label>
+              <input type="text" name="Name" id="Name" class="text"/>
+              <label for="Email">Email 주소:</label>
+              <input type="text" name="Email" id="Email" class="text"/> 
+              <label for="Message">내용:</label><br />
+              <textarea name="Message" rows="20" cols="20" id="Message" class="text"></textarea>
+              <input type="submit" name="submit" value="보내기" class="submit-btn td yellow"/>
+            </form>
+          <div style="clear: both;"></div>
         </div>
     </body>
-</html>
+</html> 
